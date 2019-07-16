@@ -102,7 +102,14 @@ class Resnet50:
         self.load_weight()
 
     def train(self):
-        pass
+        # 检测是否有保存的模型
+        if self.load(self.checkpoint_dir):
+            print(" [*] Load SUCCESS")
+        else:
+            print(" [!] Load failed...")
+        # 数据读取
+        
+        # 开始训练
 
     def test(self, img):
         pp_mean = sio.loadmat('C:\\Users\\sk\\Desktop\\pp_mean.mat')['normalization']
@@ -116,8 +123,23 @@ class Resnet50:
         A = self.sess.run(self.outs, feed_dict={self.inputs: im})
         print(A[0].argsort()[-10:][::-1])
         print('--------')
+    
+    def save(self, checkpoint_dir, step):
+        if not os.path.exists(checkpoint_dir):
+            os.makedirs(checkpoint_dir)
+        self.saver.save(self.sess, os.path.join(
+            checkpoint_dir, self.model_name), global_step=step)
 
-
+    def load(self, checkpoint_dir):
+        print(" [*] Reading checkpoint...")
+        ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
+        if ckpt and ckpt.model_checkpoint_path:
+            ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
+            self.saver.restore(self.sess, os.path.join(
+                checkpoint_dir, ckpt_name))
+            return True
+        else:
+            return False
 
 def main():
     model = Resnet50()
